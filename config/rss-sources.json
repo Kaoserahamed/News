@@ -1,0 +1,60 @@
+{
+  "sources": [
+    {
+      "id": "techcrunch",
+      "name": "TechCrunch",
+      "url": "https://techcrunch.com/feed/",
+      "category": "Technology",
+      "enabled": true
+    },
+    {
+      "id": "espn",
+      "name": "ESPN",
+      "url": "https://www.espn.com/espn/rss/news",
+      "category": "Sports",
+      "enabled": true
+    },
+    {
+      "id": "bloomberg",
+      "name": "Bloomberg Business",
+      "url": "https://www.bloomberg.com/feed/podcast/business.xml",
+      "category": "Business",
+      "enabled": true
+    },
+    {
+      "id": "politico",
+      "name": "Politico",
+      "url": "https://www.politico.com/rss/politics08.xml",
+      "category": "Politics",
+      "enabled": true
+    },
+    {
+      "id": "variety",
+      "name": "Variety Entertainment",
+      "url": "https://variety.com/feed/",
+      "category": "Entertainment",
+      "enabled": true
+    },
+    {
+      "id": "wired",
+      "name": "Wired",
+      "url": "https://www.wired.com/feed/rss",
+      "category": "Technology",
+      "enabled": true
+    },
+    {
+      "id": "bbc-sport",
+      "name": "BBC Sport",
+      "url": "http://feeds.bbci.co.uk/sport/rss.xml",
+      "category": "Sports",
+      "enabled": false
+    },
+    {
+      "id": "cnbc",
+      "name": "CNBC Business",
+      "url": "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+      "category": "Business",
+      "enabled": true
+    }
+  ]
+}
