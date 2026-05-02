@@ -11,9 +11,9 @@
  */
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import handler from './update';
-import { UpdateOrchestratorService } from '../../../lib/services/update-orchestrator';
-import type { ApiResponse, UpdateApiResponse, ApiErrorResponse } from '../../../lib/models/api';
+import handler from '../../../../pages/api/cron/update';
+import { UpdateOrchestratorService } from '../../../../lib/services/update-orchestrator';
+import type { ApiResponse, UpdateApiResponse, ApiErrorResponse } from '../../../../lib/models/api';
 
 // Mock the UpdateOrchestratorService
 jest.mock('../../../lib/services/update-orchestrator');

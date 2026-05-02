@@ -137,8 +137,8 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
   
   return (
     <div className="w-full bg-gray-50 border-b border-gray-200">
-      <div className="container mx-auto px-4 py-4">
-        <h2 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+        <h2 className="text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3 uppercase tracking-wide">
           Filter by Category
         </h2>
         
@@ -206,7 +206,7 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
         
         {/* Active filter indicator */}
         {selectedCategory && (
-          <div className="mt-3 text-sm text-gray-600">
+          <div className="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-600">
             Showing <span className="font-semibold">{selectedCategory}</span> articles
             <button
               onClick={() => handleCategoryClick(null)}

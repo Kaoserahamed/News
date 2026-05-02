@@ -62,12 +62,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
   }, []);
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-4 py-4">
+    <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
       <div className="relative">
         {/* Search Icon */}
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <svg
-            className="h-5 w-5 text-gray-400"
+            className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"
             fill="currentColor"
@@ -87,7 +87,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           value={searchValue}
           onChange={handleInputChange}
           placeholder={placeholder}
-          className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg 
+          className="block w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2 sm:py-3 border border-gray-300 rounded-lg 
                      focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
                      text-sm sm:text-base
                      placeholder-gray-400
