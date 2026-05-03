@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { hasTransliterableWords } from '@/lib/utils/transliteration';
 
 /**
  * SearchBar component for the Automated News Aggregation Web Application
@@ -37,6 +38,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
 }) => {
   // Local state for the input value (updates immediately on user input)
   const [searchValue, setSearchValue] = useState<string>(initialValue);
+  
+  // Check if current search has transliterable words
+  const hasTransliteration = searchValue.trim() ? hasTransliterableWords(searchValue) : false;
+
+  // Sync with parent state when initialValue changes (e.g., when filters are cleared)
+  useEffect(() => {
+    setSearchValue(initialValue);
+  }, [initialValue]);
 
   // Debounced search effect - triggers onSearchChange after 300ms of inactivity
   useEffect(() => {
@@ -87,10 +96,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
           value={searchValue}
           onChange={handleInputChange}
           placeholder={placeholder}
-          className="block w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2 sm:py-3 border border-gray-300 rounded-lg 
+          className="block w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2 sm:py-3 
+                     border border-gray-300 dark:border-gray-600 rounded-lg 
                      focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
-                     text-sm sm:text-base
-                     placeholder-gray-400
+                     text-base text-gray-900 dark:text-white
+                     bg-white dark:bg-gray-800
+                     placeholder-gray-400 dark:placeholder-gray-500
                      transition-colors duration-200"
           aria-label="Search articles"
         />
@@ -121,8 +132,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
       </div>
 
       {/* Optional: Search hint text */}
-      <p className="mt-2 text-xs sm:text-sm text-gray-500 text-center">
+      <p className="mt-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 text-center">
         শিরোনাম বা সারাংশ দ্বারা অনুসন্ধান করুন
+        {hasTransliteration && (
+          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+            🌐 ইংরেজি → বাংলা
+          </span>
+        )}
       </p>
     </div>
   );

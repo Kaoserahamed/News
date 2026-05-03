@@ -1,14 +1,27 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Head from 'next/head';
+import dynamic from 'next/dynamic';
 import Header from '@/components/Header';
-import SearchBar from '@/components/SearchBar';
 import CategoryFilter from '@/components/CategoryFilter';
-import ArticleList from '@/components/ArticleList';
-import Pagination from '@/components/Pagination';
 import ErrorMessage, { detectErrorType } from '@/components/ErrorMessage';
 import { Category } from '@/lib/models/category';
 import { Article } from '@/lib/models/article';
 import { ArticlesApiResponse, ApiErrorResponse } from '@/lib/models/api';
+
+// Lazy load heavy components for better initial load
+const ArticleList = dynamic(() => import('@/components/ArticleList'), {
+  loading: () => (
+    <div className="flex flex-col items-center justify-center py-12">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600"></div>
+      <p className="mt-4 text-gray-600">সংবাদ লোড হচ্ছে...</p>
+    </div>
+  ),
+  ssr: false, // Don't render on server for faster initial load
+});
+
+const Pagination = dynamic(() => import('@/components/Pagination'), {
+  ssr: false,
+});
 
 /**
  * Main page component for the Automated News Aggregation Web Application
@@ -31,12 +44,14 @@ interface AppState {
   };
   filters: {
     category: Category | null;
-    searchTerm: string;
   };
   categoryCounts: Partial<Record<Category, number>>;
 }
 
 export default function Home() {
+  // Ref to track if category counts have been fetched
+  const categoryCountsFetched = useRef(false);
+
   // Application state
   const [state, setState] = useState<AppState>({
     articles: [],
@@ -46,17 +61,52 @@ export default function Home() {
       page: 1,
       totalPages: 1,
       total: 0,
-      limit: 20,
+      limit: 30, // Increased from 20 for better UX
     },
     filters: {
       category: null,
-      searchTerm: '',
     },
     categoryCounts: {},
   });
 
   /**
+   * Fetch category counts for all categories (unfiltered)
+   * This ensures category filter buttons always show total counts
+   */
+  const fetchCategoryCounts = useCallback(async () => {
+    try {
+      // Fetch articles without filters (use max limit of 100)
+      // This gives us a representative sample for category counts
+      const response = await fetch('/api/articles?limit=100');
+      
+      if (!response.ok) {
+        console.warn('[fetchCategoryCounts] Failed to fetch category counts');
+        return {};
+      }
+
+      const data: ArticlesApiResponse = await response.json();
+      
+      if (!data.success) {
+        return {};
+      }
+
+      // Calculate counts from the sample
+      // Note: These are approximate counts based on the first 100 articles
+      const counts: Partial<Record<Category, number>> = {};
+      data.data.articles.forEach(article => {
+        counts[article.category] = (counts[article.category] || 0) + 1;
+      });
+      
+      return counts;
+    } catch (error) {
+      console.warn('[fetchCategoryCounts] Error fetching category counts:', error);
+      return {};
+    }
+  }, []);
+
+  /**
    * Fetch articles from the API based on current filters and pagination
+   * Optimized with shorter timeout and better error handling
    */
   const fetchArticles = useCallback(async () => {
     setState(prev => ({ ...prev, loading: true, error: null }));
@@ -72,19 +122,20 @@ export default function Home() {
         params.append('category', state.filters.category);
       }
 
-      if (state.filters.searchTerm) {
-        params.append('search', state.filters.searchTerm);
-      }
-
-      // Fetch articles with 10-second timeout
+      // Fetch articles with 5-second timeout (reduced from 10s)
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
 
+      const startTime = performance.now();
       const response = await fetch(`/api/articles?${params.toString()}`, {
         signal: controller.signal,
+        // Add cache hint for faster subsequent requests
+        cache: 'default',
       });
 
       clearTimeout(timeoutId);
+      const fetchTime = performance.now() - startTime;
+      console.log(`[Performance] API fetch time: ${fetchTime.toFixed(2)}ms`);
 
       if (!response.ok) {
         if (response.status === 503) {
@@ -103,6 +154,14 @@ export default function Home() {
         throw new Error('Failed to fetch articles');
       }
 
+      // Fetch category counts separately if not already loaded
+      // This ensures category buttons always show total counts regardless of filters
+      let counts = state.categoryCounts;
+      if (!categoryCountsFetched.current) {
+        counts = await fetchCategoryCounts();
+        categoryCountsFetched.current = true;
+      }
+
       setState(prev => ({
         ...prev,
         articles: data.data.articles,
@@ -112,6 +171,7 @@ export default function Home() {
           total: data.data.pagination.total,
           limit: data.data.pagination.limit,
         },
+        categoryCounts: counts,
         loading: false,
         error: null,
       }));
@@ -138,60 +198,11 @@ export default function Home() {
         }));
       }
     }
-  }, [state.pagination.page, state.pagination.limit, state.filters.category, state.filters.searchTerm]);
-
-  /**
-   * Fetch category counts for the filter component
-   */
-  const fetchCategoryCounts = useCallback(async () => {
-    try {
-      // Fetch all articles without filters to get category counts
-      // Note: API limit is capped at 100, so we'll fetch multiple pages if needed
-      const response = await fetch('/api/articles?limit=100');
-      
-      if (!response.ok) {
-        return; // Silently fail - category counts are not critical
-      }
-
-      const data: ArticlesApiResponse = await response.json();
-
-      if (data.success) {
-        // Calculate category counts
-        const counts: Partial<Record<Category, number>> = {};
-        data.data.articles.forEach(article => {
-          counts[article.category] = (counts[article.category] || 0) + 1;
-        });
-
-        setState(prev => ({
-          ...prev,
-          categoryCounts: counts,
-        }));
-      }
-    } catch (error) {
-      // Silently fail - category counts are not critical
-      console.error('Failed to fetch category counts:', error);
-    }
-  }, []);
-
-  /**
-   * Handle search query change
-   */
-  const handleSearchChange = useCallback((query: string) => {
-    setState(prev => ({
-      ...prev,
-      filters: {
-        ...prev.filters,
-        searchTerm: query,
-      },
-      pagination: {
-        ...prev.pagination,
-        page: 1, // Reset to first page on search
-      },
-    }));
-  }, []);
+  }, [state.pagination.page, state.pagination.limit, state.filters.category, fetchCategoryCounts]);
 
   /**
    * Handle category filter change
+   * Update state immediately for responsive UI
    */
   const handleCategoryChange = useCallback((category: Category | null) => {
     setState(prev => ({
@@ -230,15 +241,17 @@ export default function Home() {
     fetchArticles();
   }, [fetchArticles]);
 
+  // Memoize computed values
+  const hasArticles = useMemo(() => state.articles.length > 0, [state.articles.length]);
+  const hasFilters = useMemo(() => 
+    Boolean(state.filters.category),
+    [state.filters.category]
+  );
+
   // Fetch articles on mount and when filters/pagination change
   useEffect(() => {
     fetchArticles();
   }, [fetchArticles]);
-
-  // Fetch category counts on mount
-  useEffect(() => {
-    fetchCategoryCounts();
-  }, [fetchCategoryCounts]);
 
   return (
     <>
@@ -247,32 +260,26 @@ export default function Home() {
         <meta name="description" content="স্বয়ংক্রিয় সংবাদ সংগ্রহ ওয়েব অ্যাপ্লিকেশন - একাধিক উৎস থেকে সংবাদ নিবন্ধ ব্রাউজ, অনুসন্ধান এবং ফিল্টার করুন" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
+        {/* Preconnect to API for faster requests */}
+        <link rel="preconnect" href="/api" />
       </Head>
 
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+        {/* Static content loads immediately */}
         <Header />
-
-        {/* Search Bar */}
-        <SearchBar 
-          onSearchChange={handleSearchChange}
-          initialValue={state.filters.searchTerm}
-        />
-
-        {/* Category Filter */}
         <CategoryFilter
           onCategoryChange={handleCategoryChange}
           categoryCounts={state.categoryCounts}
           selectedCategory={state.filters.category}
         />
 
-        {/* Main Content */}
+        {/* Dynamic content */}
         <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {/* Loading State */}
           {state.loading && (
             <div className="flex flex-col items-center justify-center py-12 sm:py-16">
               <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-b-4 border-blue-600"></div>
-              <p className="mt-4 text-gray-600 text-base sm:text-lg">সংবাদ লোড হচ্ছে...</p>
+              <p className="mt-4 text-gray-600 dark:text-gray-400 text-base sm:text-lg">সংবাদ লোড হচ্ছে...</p>
             </div>
           )}
 
@@ -286,7 +293,7 @@ export default function Home() {
           )}
 
           {/* Empty State */}
-          {!state.loading && !state.error && state.articles.length === 0 && (
+          {!state.loading && !state.error && !hasArticles && (
             <div className="max-w-2xl mx-auto text-center py-12 sm:py-16">
               <svg
                 className="mx-auto h-20 w-20 sm:h-24 sm:w-24 text-gray-400"
@@ -302,18 +309,18 @@ export default function Home() {
                   d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
                 />
               </svg>
-              <h3 className="mt-4 text-lg sm:text-xl font-semibold text-gray-900">কোনো সংবাদ পাওয়া যায়নি</h3>
-              <p className="mt-2 text-sm sm:text-base text-gray-600">
-                {state.filters.searchTerm || state.filters.category
+              <h3 className="mt-4 text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">কোনো সংবাদ পাওয়া যায়নি</h3>
+              <p className="mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-400">
+                {hasFilters
                   ? 'আপনার অনুসন্ধান বা ফিল্টার মানদণ্ড সামঞ্জস্য করার চেষ্টা করুন'
                   : 'এই মুহূর্তে কোনো সংবাদ উপলব্ধ নেই'}
               </p>
-              {(state.filters.searchTerm || state.filters.category) && (
+              {hasFilters && (
                 <button
                   onClick={() => {
                     setState(prev => ({
                       ...prev,
-                      filters: { category: null, searchTerm: '' },
+                      filters: { category: null },
                       pagination: { ...prev.pagination, page: 1 },
                     }));
                   }}
@@ -328,20 +335,17 @@ export default function Home() {
           )}
 
           {/* Articles List */}
-          {!state.loading && !state.error && state.articles.length > 0 && (
+          {!state.loading && !state.error && hasArticles && (
             <div>
-              <div className="mb-6 text-sm sm:text-base text-gray-600">
+              <div className="mb-6 text-sm sm:text-base text-gray-600 dark:text-gray-400">
                 দেখানো হচ্ছে {((state.pagination.page - 1) * state.pagination.limit) + 1} - {Math.min(state.pagination.page * state.pagination.limit, state.pagination.total)} এর মধ্যে {state.pagination.total} টি সংবাদ
               </div>
               
-              {/* ArticleList component with search term highlighting */}
               <ArticleList
                 articles={state.articles}
                 loading={state.loading}
-                searchTerm={state.filters.searchTerm}
               />
 
-              {/* Pagination */}
               <Pagination
                 currentPage={state.pagination.page}
                 totalPages={state.pagination.totalPages}

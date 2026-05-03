@@ -409,10 +409,22 @@ export class DatabaseService {
     const skip = (page - 1) * limit;
 
     try {
-      // Execute query with pagination
+      // Execute query with pagination and projection (only fetch needed fields)
+      // Note: MongoDB doesn't allow mixing inclusion (1) and exclusion (0) in same projection
+      const projection = {
+        title: 1,
+        summary: 1,
+        url: 1,
+        source: 1,
+        category: 1,
+        publishedAt: 1,
+        imageUrl: 1,
+        trustScore: 1,
+      };
+
       const [articles, total] = await Promise.all([
         articlesCollection
-          .find(filter)
+          .find(filter, { projection })
           .sort(sort)
           .skip(skip)
           .limit(limit)
@@ -425,17 +437,17 @@ export class DatabaseService {
         id: doc._id.toString(),
         title: doc.title,
         summary: doc.summary,
-        content: doc.content,
+        content: '',  // Excluded for performance
         url: doc.url,
         source: doc.source,
         category: doc.category as Category,
         publishedAt: doc.publishedAt,
-        processedAt: doc.processedAt,
-        createdAt: doc.createdAt,
+        processedAt: doc.publishedAt,  // Use publishedAt as fallback
+        createdAt: doc.publishedAt,    // Use publishedAt as fallback
         imageUrl: doc.imageUrl,
         trustScore: doc.trustScore || 0.5,
-        verificationStatus: doc.verificationStatus || 'unverified',
-        crossSourceCount: doc.crossSourceCount || 1,
+        verificationStatus: 'unverified',
+        crossSourceCount: 1,
       }));
 
       // Calculate pagination metadata

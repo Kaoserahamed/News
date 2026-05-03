@@ -231,7 +231,7 @@ function validateQueryParameters(query: any): ValidationResult {
     }
     
     // Allow empty search strings (will be handled by database service)
-    articleQuery.searchTerm = search;
+    articleQuery.searchTerm = search.trim();
   }
 
   return {

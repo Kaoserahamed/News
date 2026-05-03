@@ -146,9 +146,9 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
   };
   
   return (
-    <div className="w-full bg-gray-50 border-b border-gray-200">
+    <div className="w-full bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 transition-colors duration-200">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-        <h2 className="text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3 uppercase tracking-wide">
+        <h2 className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 sm:mb-3 uppercase tracking-wide">
           বিভাগ অনুসারে ফিল্টার করুন
         </h2>
         
@@ -165,8 +165,8 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
               transition-all duration-200
               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500
               ${selectedCategory === null
-                ? 'bg-gray-700 text-white border-gray-700 shadow-md'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+                ? 'bg-gray-700 dark:bg-gray-600 text-white border-gray-700 dark:border-gray-600 shadow-md'
+                : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400'
               }
             `}
             aria-label="Show all articles"

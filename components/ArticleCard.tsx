@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Article } from '@/lib/models/article';
 import { Category } from '@/lib/models/category';
@@ -90,13 +90,23 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
     () => CATEGORY_NAMES_BANGLA[article.category],
     [article.category]
   );
+
+  // Handle card click to open article
+  const handleCardClick = useCallback((e: React.MouseEvent) => {
+    // Don't trigger if clicking on a link or button
+    if ((e.target as HTMLElement).tagName === 'A' || (e.target as HTMLElement).closest('a')) {
+      return;
+    }
+    window.open(article.url, '_blank', 'noopener,noreferrer');
+  }, [article.url]);
   
   return (
     <article
+      onClick={handleCardClick}
       className={`
-        bg-white rounded-lg shadow-md border-l-4 ${categoryStyles.border}
+        bg-white dark:bg-gray-800 rounded-lg shadow-md border-l-4 ${categoryStyles.border}
         ${categoryStyles.hover}
-        transition-all duration-200 hover:shadow-lg
+        transition-all duration-200 hover:shadow-lg cursor-pointer
         overflow-hidden
         flex flex-col h-full
       `}
@@ -151,7 +161,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
             href={article.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-lg sm:text-xl font-bold text-gray-900 hover:text-blue-600 
+            className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 
                        transition-colors duration-200 line-clamp-2"
             aria-label={`Read full article: ${plainTitle}`}
           >
@@ -160,7 +170,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
         </h2>
         
         {/* Article Summary */}
-        <p className="text-sm sm:text-base text-gray-700 mb-4 line-clamp-3 flex-grow">
+        <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 mb-4 line-clamp-3 flex-grow">
           {article.summary}
         </p>
         
@@ -168,7 +178,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between 
                         gap-2 sm:gap-4 pt-3 border-t border-gray-200 mt-auto">
           {/* Source */}
-          <div className="flex items-center text-sm text-gray-600">
+          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
             <svg
               className="w-4 h-4 mr-1.5 flex-shrink-0"
               xmlns="http://www.w3.org/2000/svg"
@@ -188,7 +198,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
           </div>
           
           {/* Publication Date (Relative) */}
-          <div className="flex items-center text-sm text-gray-500">
+          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
             <svg
               className="w-4 h-4 mr-1.5 flex-shrink-0"
               xmlns="http://www.w3.org/2000/svg"
