@@ -1,17 +1,40 @@
-# Automated News Aggregation Web Application
+# Bangladesh News Aggregator
 
-A full-stack news aggregation system that automatically collects, processes, and presents news articles from multiple RSS feed sources. The system runs automated hourly updates, processes and deduplicates content, and provides a responsive web interface for browsing, searching, and filtering news.
+A full-stack news aggregation system that automatically collects, processes, and presents news articles from reliable Bangladesh news sources. The system runs automated hourly updates, processes and deduplicates content, and provides a responsive bilingual (Bangla/English) web interface.
 
 ## ✨ Features
 
-- **Automated Collection**: Hourly news updates from 8+ RSS sources across multiple categories
-- **Smart Processing**: Content normalization, HTML cleaning, and intelligent categorization
-- **Duplicate Detection**: Advanced similarity detection prevents duplicate articles (90% threshold)
-- **MongoDB Storage**: Scalable cloud database with optimized indexes for fast queries
-- **REST API**: Clean JSON API with pagination, search, and filtering
-- **Responsive UI**: Mobile-first design that works on all devices (320px - 2560px)
-- **Search & Filter**: Real-time search with category filtering and pagination
-- **Health Monitoring**: Built-in health check endpoint for system monitoring
+- **🇧🇩 Bangladesh Focus**: Curated news from top Bangladesh sources (Prothom Alo, Daily Star, BBC Bangla, DW Bangla)
+- **🌐 Bilingual Support**: Content in both Bangla and English with smart categorization
+- **📸 Rich Media**: 89% of articles include images for visual engagement
+- **🤖 Automated Collection**: Hourly news updates from 4 verified, reliable RSS sources
+- **🧠 Smart Processing**: Content normalization, HTML cleaning, and intelligent categorization
+- **🔍 Duplicate Detection**: Advanced similarity detection prevents duplicate articles (90% threshold)
+- **💾 MongoDB Storage**: Scalable cloud database with optimized indexes for fast queries
+- **🔌 REST API**: Clean JSON API with pagination, search, and filtering
+- **📱 Responsive UI**: Mobile-first design that works on all devices (320px - 2560px)
+- **🔎 Search & Filter**: Real-time search with category filtering and pagination
+- **❤️ Health Monitoring**: Built-in health check endpoint for system monitoring
+
+## 🇧🇩 News Sources (All Verified Working)
+
+| Source | Language | Type | Articles/Fetch | Images |
+|--------|----------|------|----------------|--------|
+| **Prothom Alo** | Bangla | Daily Newspaper | ~54 | 100% |
+| **The Daily Star** | English | Daily Newspaper | ~4 | 100% |
+| **BBC Bangla** | Bangla | International | ~14 | 100% |
+| **DW Bangla** | Bangla | International | ~9 | 0% |
+
+**Total**: ~81 articles per fetch with 89% image coverage
+
+## 📊 Categories (Bangla/English)
+
+- 🔧 **প্রযুক্তি** (Technology)
+- ⚽ **খেলাধুলা** (Sports)
+- 💼 **ব্যবসা** (Business)
+- 🏛️ **রাজনীতি** (Politics)
+- 🎬 **বিনোদন** (Entertainment)
+- 📰 **সাধারণ** (General)
 
 ## 🚀 Tech Stack
 
@@ -213,13 +236,15 @@ RSS feed sources are configured in `config/rss-sources.json`:
 
 ### Categories
 
-Available categories (defined in `lib/models/category.ts`):
-- Technology
-- Sports
-- Business
-- Politics
-- Entertainment
-- General
+Available categories with bilingual support (defined in `lib/models/category.ts`):
+- **Technology** (প্রযুক্তি) - Tech news, gadgets, software
+- **Sports** (খেলাধুলা) - Cricket, football, BPL, international sports
+- **Business** (ব্যবসা) - Economy, stock market, trade, banking
+- **Politics** (রাজনীতি) - Government, elections, policy, international relations
+- **Entertainment** (বিনোদন) - Dhallywood, music, TV, culture
+- **General** (সাধারণ) - Other news and events
+
+The system automatically categorizes articles using Bangladesh-specific keywords in both Bangla and English.
 
 ## 🌐 API Endpoints
 
@@ -377,10 +402,12 @@ Monitor cron job execution:
 
 ## 📚 Additional Documentation
 
-For detailed deployment configuration and troubleshooting:
-- **[DEPLOYMENT_CONFIGURATION.md](./DEPLOYMENT_CONFIGURATION.md)** - Comprehensive deployment guide with troubleshooting
+- **[RELIABLE_NEWS_SOURCES.md](./RELIABLE_NEWS_SOURCES.md)** - Complete source documentation and verification
+- **[DEPLOYMENT_CONFIGURATION.md](./DEPLOYMENT_CONFIGURATION.md)** - Deployment guide with troubleshooting
+- **[DEPLOYMENT_QUICK_START.md](./DEPLOYMENT_QUICK_START.md)** - Quick deployment guide
+- **[VERCEL_CRON_SETUP.md](./VERCEL_CRON_SETUP.md)** - Cron job configuration
 
-## 🧪 Testing
+## 🧪 Testing & Verification
 
 ```bash
 # Run all tests
@@ -394,6 +421,15 @@ npm run test:coverage
 
 # Test MongoDB connection
 npm run test:mongodb-connection
+
+# Verify RSS sources are working
+npx ts-node --project tsconfig.scripts.json scripts/verify-rss-sources.ts
+
+# Test Bangladesh categorization
+npx ts-node --project tsconfig.scripts.json scripts/test-bangladesh-categorization.ts
+
+# Test with real articles
+npx ts-node --project tsconfig.scripts.json scripts/test-real-categorization.ts
 ```
 
 ## 🛠️ Development Scripts
@@ -466,17 +502,19 @@ MIT License - see LICENSE file for details
 
 ## 🙏 Acknowledgments
 
-- RSS feeds provided by TechCrunch, ESPN, Bloomberg, Politico, Variety, Wired, BBC Sport, and CNBC
+- RSS feeds provided by Prothom Alo, The Daily Star, BBC Bangla, and Deutsche Welle Bangla
 - Built with [Next.js](https://nextjs.org/), [React](https://react.dev/), and [MongoDB](https://www.mongodb.com/)
 - Deployed on [Vercel](https://vercel.com/)
+- Designed for Bangladesh news consumers 🇧🇩
 
 ## 📞 Support
 
 For issues and questions:
-- Check the [DEPLOYMENT_CONFIGURATION.md](./DEPLOYMENT_CONFIGURATION.md) for detailed troubleshooting
-- Review Vercel function logs for runtime errors
-- Check MongoDB Atlas logs for database issues
+- Check the [RELIABLE_NEWS_SOURCES.md](./RELIABLE_NEWS_SOURCES.md) for source verification
+- Review [DEPLOYMENT_CONFIGURATION.md](./DEPLOYMENT_CONFIGURATION.md) for detailed troubleshooting
+- Check Vercel function logs for runtime errors
+- Review MongoDB Atlas logs for database issues
 
 ---
 
-**Built with ❤️ using Next.js, React, and MongoDB**
+**Built with ❤️ for Bangladesh 🇧🇩 using Next.js, React, and MongoDB**

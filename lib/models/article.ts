@@ -11,6 +11,8 @@ export interface RawArticle {
   link: string;
   pubDate: string;
   source: string;
+  imageUrl?: string;
+  trustScore?: number;  // Trust score from source
 }
 
 /**
@@ -26,6 +28,10 @@ export interface ProcessedArticle {
   category: Category;
   publishedAt: Date;
   processedAt: Date;
+  imageUrl?: string;
+  trustScore?: number;      // Trust score from source
+  verificationStatus?: 'verified' | 'unverified' | 'cross-verified';  // Verification status
+  crossSourceCount?: number;  // Number of sources reporting same story
 }
 
 /**

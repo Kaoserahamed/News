@@ -432,6 +432,10 @@ export class DatabaseService {
         publishedAt: doc.publishedAt,
         processedAt: doc.processedAt,
         createdAt: doc.createdAt,
+        imageUrl: doc.imageUrl,
+        trustScore: doc.trustScore || 0.5,
+        verificationStatus: doc.verificationStatus || 'unverified',
+        crossSourceCount: doc.crossSourceCount || 1,
       }));
 
       // Calculate pagination metadata
@@ -493,6 +497,10 @@ export class DatabaseService {
         publishedAt: doc.publishedAt,
         processedAt: doc.processedAt,
         createdAt: doc.createdAt,
+        imageUrl: doc.imageUrl,
+        trustScore: doc.trustScore || 0.5,
+        verificationStatus: doc.verificationStatus || 'unverified',
+        crossSourceCount: doc.crossSourceCount || 1,
       }));
     } catch (error) {
       console.error('[DatabaseService] Error finding recent articles:', error);

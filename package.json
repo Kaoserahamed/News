@@ -10,7 +10,11 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:mongodb-connection": "ts-node --project tsconfig.scripts.json scripts/test-mongodb-connection.ts"
+    "test:mongodb": "ts-node --project tsconfig.scripts.json scripts/test-mongodb-connection.ts",
+    "verify:sources": "ts-node --project tsconfig.scripts.json scripts/verify-rss-sources.ts",
+    "verify:categorization": "ts-node --project tsconfig.scripts.json scripts/test-bangladesh-categorization.ts",
+    "test:real": "ts-node --project tsconfig.scripts.json scripts/test-real-categorization.ts",
+    "refresh:articles": "ts-node --project tsconfig.scripts.json scripts/clear-and-refetch.ts"
   },
   "dependencies": {
     "date-fns": "^4.1.0",

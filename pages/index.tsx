@@ -146,7 +146,8 @@ export default function Home() {
   const fetchCategoryCounts = useCallback(async () => {
     try {
       // Fetch all articles without filters to get category counts
-      const response = await fetch('/api/articles?limit=1000');
+      // Note: API limit is capped at 100, so we'll fetch multiple pages if needed
+      const response = await fetch('/api/articles?limit=100');
       
       if (!response.ok) {
         return; // Silently fail - category counts are not critical
@@ -242,8 +243,8 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>News Aggregator - Your daily news, all in one place</title>
-        <meta name="description" content="Automated News Aggregation Web Application - Browse, search, and filter news articles from multiple sources" />
+        <title>বাংলাদেশ সংবাদ - আপনার দৈনিক সংবাদ, এক জায়গায়</title>
+        <meta name="description" content="স্বয়ংক্রিয় সংবাদ সংগ্রহ ওয়েব অ্যাপ্লিকেশন - একাধিক উৎস থেকে সংবাদ নিবন্ধ ব্রাউজ, অনুসন্ধান এবং ফিল্টার করুন" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -271,7 +272,7 @@ export default function Home() {
           {state.loading && (
             <div className="flex flex-col items-center justify-center py-12 sm:py-16">
               <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-b-4 border-blue-600"></div>
-              <p className="mt-4 text-gray-600 text-base sm:text-lg">Loading articles...</p>
+              <p className="mt-4 text-gray-600 text-base sm:text-lg">সংবাদ লোড হচ্ছে...</p>
             </div>
           )}
 
@@ -301,11 +302,11 @@ export default function Home() {
                   d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
                 />
               </svg>
-              <h3 className="mt-4 text-lg sm:text-xl font-semibold text-gray-900">No articles found</h3>
+              <h3 className="mt-4 text-lg sm:text-xl font-semibold text-gray-900">কোনো সংবাদ পাওয়া যায়নি</h3>
               <p className="mt-2 text-sm sm:text-base text-gray-600">
                 {state.filters.searchTerm || state.filters.category
-                  ? 'Try adjusting your search or filter criteria'
-                  : 'No articles are available at the moment'}
+                  ? 'আপনার অনুসন্ধান বা ফিল্টার মানদণ্ড সামঞ্জস্য করার চেষ্টা করুন'
+                  : 'এই মুহূর্তে কোনো সংবাদ উপলব্ধ নেই'}
               </p>
               {(state.filters.searchTerm || state.filters.category) && (
                 <button
@@ -320,7 +321,7 @@ export default function Home() {
                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
                            transition-colors duration-200"
                 >
-                  Clear Filters
+                  ফিল্টার সাফ করুন
                 </button>
               )}
             </div>
@@ -330,7 +331,7 @@ export default function Home() {
           {!state.loading && !state.error && state.articles.length > 0 && (
             <div>
               <div className="mb-6 text-sm sm:text-base text-gray-600">
-                Showing {((state.pagination.page - 1) * state.pagination.limit) + 1} - {Math.min(state.pagination.page * state.pagination.limit, state.pagination.total)} of {state.pagination.total} articles
+                দেখানো হচ্ছে {((state.pagination.page - 1) * state.pagination.limit) + 1} - {Math.min(state.pagination.page * state.pagination.limit, state.pagination.total)} এর মধ্যে {state.pagination.total} টি সংবাদ
               </div>
               
               {/* ArticleList component with search term highlighting */}

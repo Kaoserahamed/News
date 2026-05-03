@@ -12,6 +12,7 @@ import { NewsCollectorService } from './news-collector';
 import { ContentProcessorService } from './content-processor';
 import { DuplicateDetectorService } from './duplicate-detector';
 import { DatabaseService } from './database';
+import { ArticleRankerService } from './article-ranker';
 import { createSystemLog } from '../models/system-log';
 import { ProcessedArticle } from '../models/article';
 
@@ -39,6 +40,7 @@ export class UpdateOrchestratorService {
   private contentProcessor: ContentProcessorService;
   private duplicateDetector: DuplicateDetectorService;
   private databaseService: DatabaseService;
+  private articleRanker: ArticleRankerService;
   private isRunning: boolean = false;  // Lock flag to prevent concurrent execution
 
   constructor() {
@@ -46,6 +48,7 @@ export class UpdateOrchestratorService {
     this.contentProcessor = new ContentProcessorService();
     this.databaseService = DatabaseService.getInstance();
     this.duplicateDetector = new DuplicateDetectorService(this.databaseService);
+    this.articleRanker = new ArticleRankerService();
   }
 
   /**
@@ -237,12 +240,44 @@ export class UpdateOrchestratorService {
         }
       ));
 
+      // Step 2.5: Rank articles and select top 30
+      const rankStartTime = Date.now();
+      console.log(createSystemLog(
+        'info',
+        'UpdateOrchestrator',
+        `Step 2.5: Ranking ${processedArticles.length} articles to select top 30`,
+        {
+          executionId,
+          phase: 'rank',
+          step: 2.5,
+          articleCount: processedArticles.length,
+        }
+      ));
+
+      const rankedArticles = this.articleRanker.rankArticles(processedArticles);
+      const rankDuration = Date.now() - rankStartTime;
+
+      console.log(createSystemLog(
+        'info',
+        'UpdateOrchestrator',
+        `Step 2.5 completed: Selected top ${rankedArticles.length} articles from ${processedArticles.length}`,
+        {
+          executionId,
+          phase: 'rank',
+          step: 2.5,
+          originalCount: processedArticles.length,
+          selectedCount: rankedArticles.length,
+          duration: rankDuration,
+          categoryDistribution: this.articleRanker.getCategoryDistribution(rankedArticles),
+        }
+      ));
+
       // Step 3 & 4: Check duplicates and store articles
       const storeStartTime = Date.now();
       console.log(createSystemLog(
         'info',
         'UpdateOrchestrator',
-        `Step 3 & 4: Checking duplicates and storing ${processedArticles.length} articles`,
+        `Step 3 & 4: Checking duplicates and storing ${rankedArticles.length} articles`,
         {
           executionId,
           phase: 'duplicate-check-and-store',
@@ -253,7 +288,7 @@ export class UpdateOrchestratorService {
 
       let storageErrors = 0;
 
-      for (const article of processedArticles) {
+      for (const article of rankedArticles) {
         try {
           // Check if article is a duplicate
           const isDuplicate = await this.duplicateDetector.isDuplicateFromDB(article);

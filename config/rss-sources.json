@@ -1,60 +1,85 @@
 {
   "sources": [
     {
+      "id": "prothomalo",
+      "name": "Prothom Alo",
+      "url": "https://www.prothomalo.com/feed/",
+      "category": "General",
+      "enabled": true,
+      "trustScore": 0.9,
+      "description": "Bangladesh's leading daily - Bangla"
+    },
+    {
+      "id": "daily-star",
+      "name": "The Daily Star",
+      "url": "https://www.thedailystar.net/rss.xml",
+      "category": "General",
+      "enabled": true,
+      "trustScore": 0.9,
+      "description": "Leading English daily"
+    },
+    {
+      "id": "bbc-bengali",
+      "name": "BBC Bangla",
+      "url": "https://feeds.bbci.co.uk/bengali/rss.xml",
+      "category": "General",
+      "enabled": true,
+      "trustScore": 0.95,
+      "description": "BBC Bengali service"
+    },
+    {
+      "id": "bbc-world",
+      "name": "BBC World News",
+      "url": "http://feeds.bbci.co.uk/news/world/rss.xml",
+      "category": "General",
+      "enabled": false,
+      "trustScore": 0.95,
+      "description": "BBC World - Disabled to reduce load"
+    },
+    {
+      "id": "dw-bengali",
+      "name": "Deutsche Welle Bangla",
+      "url": "https://rss.dw.com/xml/rss-ben-all",
+      "category": "General",
+      "enabled": false,
+      "trustScore": 0.95,
+      "description": "DW Bengali - Disabled to reduce load"
+    },
+    {
+      "id": "al-jazeera",
+      "name": "Al Jazeera",
+      "url": "https://www.aljazeera.com/xml/rss/all.xml",
+      "category": "General",
+      "enabled": false,
+      "trustScore": 0.9,
+      "description": "Disabled to reduce load"
+    },
+    {
+      "id": "google-news-bangladesh",
+      "name": "Google News - Bangladesh",
+      "url": "https://news.google.com/rss/search?q=bangladesh&hl=en-BD&gl=BD&ceid=BD:en",
+      "category": "General",
+      "enabled": false,
+      "trustScore": 0.85,
+      "description": "Disabled - too many articles"
+    },
+    {
       "id": "techcrunch",
       "name": "TechCrunch",
       "url": "https://techcrunch.com/feed/",
       "category": "Technology",
-      "enabled": true
+      "enabled": false,
+      "trustScore": 0.85,
+      "description": "Disabled to reduce load"
     },
     {
       "id": "espn",
       "name": "ESPN",
       "url": "https://www.espn.com/espn/rss/news",
       "category": "Sports",
-      "enabled": true
-    },
-    {
-      "id": "bloomberg",
-      "name": "Bloomberg Business",
-      "url": "https://www.bloomberg.com/feed/podcast/business.xml",
-      "category": "Business",
-      "enabled": true
-    },
-    {
-      "id": "politico",
-      "name": "Politico",
-      "url": "https://www.politico.com/rss/politics08.xml",
-      "category": "Politics",
-      "enabled": true
-    },
-    {
-      "id": "variety",
-      "name": "Variety Entertainment",
-      "url": "https://variety.com/feed/",
-      "category": "Entertainment",
-      "enabled": true
-    },
-    {
-      "id": "wired",
-      "name": "Wired",
-      "url": "https://www.wired.com/feed/rss",
-      "category": "Technology",
-      "enabled": true
-    },
-    {
-      "id": "bbc-sport",
-      "name": "BBC Sport",
-      "url": "http://feeds.bbci.co.uk/sport/rss.xml",
-      "category": "Sports",
-      "enabled": false
-    },
-    {
-      "id": "cnbc",
-      "name": "CNBC Business",
-      "url": "https://www.cnbc.com/id/100003114/device/rss/rss.html",
-      "category": "Business",
-      "enabled": true
+      "enabled": false,
+      "trustScore": 0.85,
+      "description": "Disabled to reduce load"
     }
   ]
 }

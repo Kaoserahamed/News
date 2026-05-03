@@ -16,6 +16,13 @@ export class NewsCollectorService {
   constructor() {
     this.parser = new Parser({
       timeout: this.FETCH_TIMEOUT,
+      customFields: {
+        item: [
+          ['media:content', 'media:content'],
+          ['media:thumbnail', 'media:thumbnail'],
+          ['content:encoded', 'content:encoded'],
+        ]
+      }
     });
     this.loadSources();
   }
@@ -150,6 +157,45 @@ export class NewsCollectorService {
             continue;
           }
 
+          // Extract image URL from various RSS fields
+          let imageUrl: string | undefined;
+          
+          // Try different image fields in order of preference
+          if (item.enclosure && item.enclosure.url) {
+            imageUrl = item.enclosure.url;
+          } else if (item['media:content']) {
+            // Handle media:content (can be object or array)
+            const mediaContent = item['media:content'];
+            if (Array.isArray(mediaContent) && mediaContent.length > 0 && mediaContent[0].$?.url) {
+              imageUrl = mediaContent[0].$.url;
+            } else if (mediaContent.$ && mediaContent.$.url) {
+              imageUrl = mediaContent.$.url;
+            }
+          } else if (item['media:thumbnail']) {
+            // Handle media:thumbnail (can be object or array)
+            const mediaThumbnail = item['media:thumbnail'];
+            if (Array.isArray(mediaThumbnail) && mediaThumbnail.length > 0 && mediaThumbnail[0].$?.url) {
+              imageUrl = mediaThumbnail[0].$.url;
+            } else if (mediaThumbnail.$ && mediaThumbnail.$.url) {
+              imageUrl = mediaThumbnail.$.url;
+            }
+          } else if (item.image && typeof item.image === 'object' && 'url' in item.image) {
+            imageUrl = (item.image as any).url;
+          } else if (item.image && typeof item.image === 'string') {
+            imageUrl = item.image;
+          }
+          
+          // If no image found in media fields, try extracting from content
+          if (!imageUrl) {
+            const contentToSearch = item['content:encoded'] || item.content;
+            if (contentToSearch && typeof contentToSearch === 'string') {
+              const imgMatch = contentToSearch.match(/<img[^>]+src=["']([^"'>]+)["']/i);
+              if (imgMatch && imgMatch[1]) {
+                imageUrl = imgMatch[1];
+              }
+            }
+          }
+
           // Extract article data
           const article: RawArticle = {
             title: item.title,
@@ -158,6 +204,8 @@ export class NewsCollectorService {
             link: item.link,
             pubDate: item.pubDate,
             source: sourceConfig.name,
+            imageUrl: imageUrl,
+            trustScore: sourceConfig.trustScore || 0.5,  // Pass trust score from source
           };
 
           articles.push(article);

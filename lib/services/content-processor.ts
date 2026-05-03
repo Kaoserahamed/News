@@ -188,6 +188,10 @@ export class ContentProcessorService {
       category,
       publishedAt,
       processedAt: new Date(),
+      imageUrl: raw.imageUrl, // Preserve image URL from raw article
+      trustScore: raw.trustScore || 0.5,  // Preserve trust score
+      verificationStatus: 'unverified',  // Default status
+      crossSourceCount: 1,  // Single source initially
     };
 
     return processed;

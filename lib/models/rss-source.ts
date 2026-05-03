@@ -9,6 +9,8 @@ export interface RSSSource {
   url: string;          // RSS feed URL
   category: Category;   // Default category for articles from this source
   enabled: boolean;     // Whether to fetch from this source
+  trustScore?: number;  // Trust score (0.0 - 1.0) for source credibility
+  description?: string; // Optional description of the source's reliability and focus
 }
 
 /**

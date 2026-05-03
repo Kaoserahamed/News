@@ -135,11 +135,21 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
     return focusMap[category];
   };
   
+  // Category names in Bangla
+  const categoryNamesBangla: Record<Category, string> = {
+    [Category.TECHNOLOGY]: 'প্রযুক্তি',
+    [Category.SPORTS]: 'খেলাধুলা',
+    [Category.BUSINESS]: 'ব্যবসা',
+    [Category.POLITICS]: 'রাজনীতি',
+    [Category.ENTERTAINMENT]: 'বিনোদন',
+    [Category.GENERAL]: 'সাধারণ'
+  };
+  
   return (
     <div className="w-full bg-gray-50 border-b border-gray-200">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
         <h2 className="text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3 uppercase tracking-wide">
-          Filter by Category
+          বিভাগ অনুসারে ফিল্টার করুন
         </h2>
         
         {/* Category buttons container - responsive grid */}
@@ -162,7 +172,7 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
             aria-label="Show all articles"
             aria-pressed={selectedCategory === null}
           >
-            <span>All</span>
+            <span>সব</span>
             <span className="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-600 text-white">
               {totalCount}
             </span>
@@ -190,7 +200,7 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
                 aria-label={`Filter by ${category}`}
                 aria-pressed={isSelected}
               >
-                <span>{category}</span>
+                <span>{categoryNamesBangla[category]}</span>
                 <span 
                   className={`
                     ml-2 px-2 py-0.5 text-xs font-semibold rounded-full
@@ -207,13 +217,13 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
         {/* Active filter indicator */}
         {selectedCategory && (
           <div className="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-600">
-            Showing <span className="font-semibold">{selectedCategory}</span> articles
+            দেখানো হচ্ছে <span className="font-semibold">{categoryNamesBangla[selectedCategory]}</span> সংবাদ
             <button
               onClick={() => handleCategoryClick(null)}
               className="ml-2 text-blue-600 hover:text-blue-800 underline focus:outline-none"
               aria-label="Clear category filter"
             >
-              Clear filter
+              ফিল্টার সাফ করুন
             </button>
           </div>
         )}

@@ -32,7 +32,7 @@ interface SearchBarProps {
 
 const SearchBar: React.FC<SearchBarProps> = ({
   onSearchChange,
-  placeholder = "Search articles...",
+  placeholder = "সংবাদ খুঁজুন...",
   initialValue = ""
 }) => {
   // Local state for the input value (updates immediately on user input)
@@ -122,7 +122,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
       {/* Optional: Search hint text */}
       <p className="mt-2 text-xs sm:text-sm text-gray-500 text-center">
-        Search by title or summary
+        শিরোনাম বা সারাংশ দ্বারা অনুসন্ধান করুন
       </p>
     </div>
   );
