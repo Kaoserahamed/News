@@ -187,7 +187,7 @@ This implementation plan breaks down the Automated News Aggregation Web Applicat
     - Return system status, database status, and last update time
     - _Requirements: 12.5_
   
-  - [ ] 9.4 Write API endpoint tests
+  - [x] 9.4 Write API endpoint tests
     - Test /api/articles with various query parameters
     - Test /api/articles error responses (400, 503)
     - Test /api/cron/update with valid and invalid secrets
@@ -258,7 +258,7 @@ This implementation plan breaks down the Automated News Aggregation Web Applicat
     - Implement 10-second timeout for API requests
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5_
   
-  - [~] 13.3 Implement responsive design breakpoints
+  - [x] 13.3 Implement responsive design breakpoints
     - Test and adjust layouts for mobile (320px-767px): single column
     - Test and adjust layouts for tablet (768px-1023px): two columns
     - Test and adjust layouts for desktop (1024px+): multi-column grid
@@ -275,14 +275,14 @@ This implementation plan breaks down the Automated News Aggregation Web Applicat
   - Ask the user if questions arise
 
 - [~] 15. Integration and End-to-End Wiring
-  - [~] 15.1 Connect frontend to backend API
+  - [x] 15.1 Connect frontend to backend API
     - Verify all API endpoints are correctly called from frontend
     - Test search query parameter passing
     - Test category filter parameter passing
     - Test pagination parameter passing
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 6.1, 7.2_
   
-  - [~] 15.2 Test complete update cycle
+  - [x] 15.2 Test complete update cycle
     - Manually trigger `/api/cron/update` endpoint
     - Verify articles are fetched, processed, and stored
     - Check database for stored articles with correct structure
@@ -290,21 +290,21 @@ This implementation plan breaks down the Automated News Aggregation Web Applicat
     - Check logs for execution metrics
     - _Requirements: 1.1, 1.5, 3.1, 3.2, 3.3, 11.1, 11.2, 11.3, 12.1_
   
-  - [~] 15.3 Configure environment variables for deployment
+  - [x] 15.3 Configure environment variables for deployment
     - Set MongoDB Atlas connection string in Vercel environment variables
     - Set Vercel cron secret
     - Configure RSS source URLs (if using environment variables)
     - Test connection to MongoDB Atlas from Vercel
     - _Requirements: 4.1, 11.5_
   
-  - [ ]* 15.4 Write end-to-end integration tests
+  - [x] 15.4 Write end-to-end integration tests
     - Test complete user flow: load page → search → filter → paginate
     - Test update cycle → database storage → API retrieval → frontend display
     - Test error scenarios: database down, RSS feed unavailable, invalid queries
     - _Requirements: 1.1, 5.1, 6.1, 7.2, 10.1_
 
 - [~] 16. Final testing and deployment preparation
-  - [~] 16.1 Verify all requirements are met
+  - [x] 16.1 Verify all requirements are met
     - Review requirements document and check each acceptance criterion
     - Test automated news collection (hourly updates)
     - Test content processing and normalization
@@ -314,7 +314,7 @@ This implementation plan breaks down the Automated News Aggregation Web Applicat
     - Test error handling and logging
     - _Requirements: All_
   
-  - [~] 16.2 Prepare deployment documentation
+  - [x] 16.2 Prepare deployment documentation
     - Document environment variables required
     - Document RSS source configuration format
     - Document MongoDB Atlas setup steps
@@ -322,7 +322,7 @@ This implementation plan breaks down the Automated News Aggregation Web Applicat
     - Create README.md with setup instructions
     - _Requirements: 1.4, 4.1, 11.5_
   
-  - [~] 16.3 Deploy to Vercel
+  - [x] 16.3 Deploy to Vercel
     - Push code to Git repository
     - Connect repository to Vercel
     - Configure environment variables in Vercel dashboard

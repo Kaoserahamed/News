@@ -9,12 +9,12 @@
  */
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import handler from './health';
-import { getDatabaseService } from '../../lib/services/database';
-import type { HealthApiResponse } from '../../lib/models/api';
+import handler from '../../../pages/api/health';
+import { getDatabaseService } from '../../../lib/services/database';
+import type { HealthApiResponse } from '../../../lib/models/api';
 
 // Mock the database service
-jest.mock('../../lib/services/database');
+jest.mock('../../../lib/services/database');
 
 describe('GET /api/health', () => {
   let req: Partial<NextApiRequest>;

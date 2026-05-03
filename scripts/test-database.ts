@@ -9,6 +9,7 @@
  * Usage: npx ts-node scripts/test-database.ts
  */
 
+import 'dotenv/config';
 import { DatabaseService } from '../lib/services/database';
 
 async function testDatabaseService() {

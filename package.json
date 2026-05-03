@@ -9,7 +9,8 @@
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:mongodb-connection": "ts-node --project tsconfig.scripts.json scripts/test-mongodb-connection.ts"
   },
   "dependencies": {
     "date-fns": "^4.1.0",
@@ -38,6 +39,7 @@
     "postcss": "^8.4.0",
     "tailwindcss": "^3.4.0",
     "ts-jest": "^29.4.9",
+    "ts-node": "^10.9.2",
     "typescript": "^5.4.0"
   }
 }

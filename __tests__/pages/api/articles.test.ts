@@ -6,14 +6,14 @@
  */
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import handler from './articles';
-import { getDatabaseService } from '../../lib/services/database';
-import { Category } from '../../lib/models/category';
-import { ArticleResult } from '../../lib/models/api';
-import { Article } from '../../lib/models/article';
+import handler from '../../../pages/api/articles';
+import { getDatabaseService } from '../../../lib/services/database';
+import { Category } from '../../../lib/models/category';
+import { ArticleResult } from '../../../lib/models/api';
+import { Article } from '../../../lib/models/article';
 
 // Mock the database service
-jest.mock('../../lib/services/database');
+jest.mock('../../../lib/services/database');
 
 describe('GET /api/articles', () => {
   let mockRequest: Partial<NextApiRequest>;
