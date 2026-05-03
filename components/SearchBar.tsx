@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { hasTransliterableWords } from '@/lib/utils/transliteration';
 
 /**
  * SearchBar component for the Automated News Aggregation Web Application
@@ -38,9 +37,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
 }) => {
   // Local state for the input value (updates immediately on user input)
   const [searchValue, setSearchValue] = useState<string>(initialValue);
-  
-  // Check if current search has transliterable words
-  const hasTransliteration = searchValue.trim() ? hasTransliterableWords(searchValue) : false;
 
   // Sync with parent state when initialValue changes (e.g., when filters are cleared)
   useEffect(() => {
@@ -134,11 +130,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
       {/* Optional: Search hint text */}
       <p className="mt-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 text-center">
         শিরোনাম বা সারাংশ দ্বারা অনুসন্ধান করুন
-        {hasTransliteration && (
-          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-            🌐 ইংরেজি → বাংলা
-          </span>
-        )}
       </p>
     </div>
   );
