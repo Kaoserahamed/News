@@ -29,8 +29,8 @@ export class DatabaseService {
   // Connection configuration
   private readonly uri: string;
   private readonly dbName: string;
-  private readonly maxRetries: number = 3;
-  private readonly retryDelays: number[] = [1000, 2000, 4000]; // Exponential backoff: 1s, 2s, 4s
+  private readonly maxRetries: number = 2; // Reduced from 3
+  private readonly retryDelays: number[] = [500, 1000]; // Faster retries: 0.5s, 1s
   
   // Collection names
   private readonly ARTICLES_COLLECTION = 'articles';
@@ -113,16 +113,23 @@ export class DatabaseService {
     for (let attempt = 0; attempt < this.maxRetries; attempt++) {
       try {
         // Create MongoDB client with connection pooling options
+        // Reduced timeouts for faster failure during build/deployment
         this.client = new MongoClient(this.uri, {
           maxPoolSize: 10,
           minPoolSize: 2,
           maxIdleTimeMS: 30000,
-          serverSelectionTimeoutMS: 5000,
-          socketTimeoutMS: 45000,
+          serverSelectionTimeoutMS: 3000, // Reduced from 5000ms
+          socketTimeoutMS: 30000, // Reduced from 45000ms
+          connectTimeoutMS: 3000, // Added explicit connect timeout
         });
 
-        // Connect to MongoDB
-        await this.client.connect();
+        // Connect to MongoDB with timeout
+        await Promise.race([
+          this.client.connect(),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Connection timeout')), 3000)
+          )
+        ]);
 
         // Get database instance
         this.db = this.client.db(this.dbName);

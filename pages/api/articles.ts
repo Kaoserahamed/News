@@ -64,12 +64,36 @@ export default async function handler(
     // Get database service instance
     const dbService = getDatabaseService();
 
-    // Check database health before querying
-    const isHealthy = await dbService.isHealthy();
+    // Check database health before querying with timeout
+    let isHealthy = false;
+    try {
+      isHealthy = await Promise.race([
+        dbService.isHealthy(),
+        new Promise<boolean>((_, reject) => 
+          setTimeout(() => reject(new Error('Health check timeout')), 2000)
+        )
+      ]);
+    } catch (error) {
+      console.error('[API /articles] Database health check timeout:', error);
+      const errorResponse: ApiErrorResponse = {
+        success: false,
+        error: {
+          code: 'DATABASE_UNAVAILABLE',
+          message: 'Database service is currently unavailable. Please try again later.',
+        },
+      };
+      return res.status(503).json(errorResponse);
+    }
+
     if (!isHealthy) {
-      // Try to connect if not healthy
+      // Try to connect if not healthy with timeout
       try {
-        await dbService.connect();
+        await Promise.race([
+          dbService.connect(),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Connection timeout')), 5000)
+          )
+        ]);
       } catch (connectError) {
         console.error('[API /articles] Database connection failed:', connectError);
         const errorResponse: ApiErrorResponse = {
@@ -83,8 +107,13 @@ export default async function handler(
       }
     }
 
-    // Call DatabaseService.findArticles() with query parameters
-    const result = await dbService.findArticles(query);
+    // Call DatabaseService.findArticles() with query parameters and timeout
+    const result = await Promise.race([
+      dbService.findArticles(query),
+      new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Query timeout')), 10000)
+      )
+    ]);
 
     // Return successful response with articles and pagination metadata
     const successResponse: ArticlesApiResponse = {
