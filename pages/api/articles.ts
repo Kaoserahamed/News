@@ -45,6 +45,8 @@ export default async function handler(
   }
 
   try {
+    const requestStartTime = Date.now();
+    
     // Parse and validate query parameters
     const validationResult = validateQueryParameters(req.query);
     
@@ -64,6 +66,7 @@ export default async function handler(
     // Get database service instance and connect if needed
     const dbService = getDatabaseService();
     
+    const connectionStartTime = Date.now();
     try {
       // Ensure connection with timeout (reduced for faster failure)
       if (!await dbService.isHealthy()) {
@@ -73,6 +76,10 @@ export default async function handler(
             setTimeout(() => reject(new Error('Connection timeout')), 4000) // Reduced from 5000ms
           )
         ]);
+      }
+      const connectionTime = Date.now() - connectionStartTime;
+      if (connectionTime > 10) {
+        console.log(`[API /articles] Connection check took ${connectionTime}ms`);
       }
     } catch (connectError) {
       console.error('[API /articles] Database connection failed:', connectError);
@@ -87,12 +94,17 @@ export default async function handler(
     }
 
     // Call DatabaseService.findArticles() with query parameters and timeout
+    const dbQueryStartTime = Date.now();
     const result = await Promise.race([
       dbService.findArticles(query),
       new Promise<never>((_, reject) => 
         setTimeout(() => reject(new Error('Query timeout')), 10000)
       )
     ]);
+    const dbQueryTime = Date.now() - dbQueryStartTime;
+
+    const totalTime = Date.now() - requestStartTime;
+    console.log(`[API /articles] Total request time: ${totalTime}ms (DB query: ${dbQueryTime}ms)`);
 
     // Return successful response with articles and pagination metadata
     const successResponse: ArticlesApiResponse = {

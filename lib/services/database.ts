@@ -152,6 +152,13 @@ export class DatabaseService {
         cachedClient = this.client;
         cachedDb = this.db;
 
+        // Create indexes on first connection (async, don't wait)
+        if (!this.indexesCreated) {
+          this.ensureIndexes().catch(err => 
+            console.error('[DatabaseService] Background index creation failed:', err)
+          );
+        }
+
         console.log(`[DatabaseService] Successfully connected to MongoDB (attempt ${attempt + 1}/${this.maxRetries})`);
         return;
       } catch (error) {
@@ -392,8 +399,9 @@ export class DatabaseService {
    * @returns ArticleResult with articles and pagination metadata
    */
   public async findArticles(query: ArticleQuery = {}): Promise<ArticleResult> {
-    await this.ensureIndexes();
-
+    // Skip ensureIndexes() - indexes are created once on first connection
+    // This saves ~50-100ms per request
+    
     const articlesCollection = await this.getCollection(this.ARTICLES_COLLECTION);
 
     // Apply defaults and validate parameters
@@ -432,6 +440,8 @@ export class DatabaseService {
     const skip = (page - 1) * limit;
 
     try {
+      const queryStartTime = Date.now();
+      
       // Execute query with pagination and projection (only fetch needed fields)
       // Note: MongoDB doesn't allow mixing inclusion (1) and exclusion (0) in same projection
       const projection = {
@@ -451,7 +461,11 @@ export class DatabaseService {
       
       const [articles, total] = await Promise.all([
         articlesCollection
-          .find(filter, { projection })
+          .find(filter, { 
+            projection,
+            // Use secondary read preference for better performance (eventual consistency is OK)
+            readPreference: 'secondaryPreferred'
+          })
           .sort(sort)
           .skip(skip)
           .limit(limit)
@@ -461,6 +475,9 @@ export class DatabaseService {
           ? articlesCollection.countDocuments(filter)
           : articlesCollection.estimatedDocumentCount()
       ]);
+
+      const queryTime = Date.now() - queryStartTime;
+      console.log(`[DatabaseService] Query executed in ${queryTime}ms (hasFilters: ${hasFilters})`);
 
       // Transform MongoDB documents to Article objects
       const transformedArticles: Article[] = articles.map((doc) => ({
@@ -487,10 +504,18 @@ export class DatabaseService {
       let categoryCounts: Partial<Record<Category, number>> | undefined;
       if (page === 1 && !hasFilters) {
         try {
-          // Use aggregation to get category counts efficiently
+          const aggStartTime = Date.now();
+          
+          // Use aggregation with allowDiskUse for better performance
           const counts = await articlesCollection.aggregate([
             { $group: { _id: '$category', count: { $sum: 1 } } }
-          ]).toArray();
+          ], { 
+            allowDiskUse: true,
+            maxTimeMS: 2000 // Timeout after 2 seconds
+          }).toArray();
+          
+          const aggTime = Date.now() - aggStartTime;
+          console.log(`[DatabaseService] Category aggregation in ${aggTime}ms`);
           
           categoryCounts = {};
           counts.forEach((item: any) => {

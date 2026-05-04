@@ -45,3 +45,13 @@ next-env.d.ts
 # OS
 .DS_Store
 Thumbs.db
+
+# Documentation (temporary/internal)
+*_SUMMARY.md
+*_OPTIMIZATION.md
+*_FIX.md
+*_READY.md
+*_CHECKLIST.md
+*.README.md
+IMPLEMENTATION_*.md
+TASK_*.md
