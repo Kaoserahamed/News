@@ -61,20 +61,21 @@ export default async function handler(
 
     const query: ArticleQuery = validationResult.query!;
 
-    // Get database service instance
+    // Get database service instance and connect if needed
     const dbService = getDatabaseService();
-
-    // Check database health before querying with timeout
-    let isHealthy = false;
+    
     try {
-      isHealthy = await Promise.race([
-        dbService.isHealthy(),
-        new Promise<boolean>((_, reject) => 
-          setTimeout(() => reject(new Error('Health check timeout')), 2000)
-        )
-      ]);
-    } catch (error) {
-      console.error('[API /articles] Database health check timeout:', error);
+      // Ensure connection with timeout (reduced for faster failure)
+      if (!await dbService.isHealthy()) {
+        await Promise.race([
+          dbService.connect(),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Connection timeout')), 4000) // Reduced from 5000ms
+          )
+        ]);
+      }
+    } catch (connectError) {
+      console.error('[API /articles] Database connection failed:', connectError);
       const errorResponse: ApiErrorResponse = {
         success: false,
         error: {
@@ -83,28 +84,6 @@ export default async function handler(
         },
       };
       return res.status(503).json(errorResponse);
-    }
-
-    if (!isHealthy) {
-      // Try to connect if not healthy with timeout
-      try {
-        await Promise.race([
-          dbService.connect(),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Connection timeout')), 5000)
-          )
-        ]);
-      } catch (connectError) {
-        console.error('[API /articles] Database connection failed:', connectError);
-        const errorResponse: ApiErrorResponse = {
-          success: false,
-          error: {
-            code: 'DATABASE_UNAVAILABLE',
-            message: 'Database service is currently unavailable. Please try again later.',
-          },
-        };
-        return res.status(503).json(errorResponse);
-      }
     }
 
     // Call DatabaseService.findArticles() with query parameters and timeout
@@ -120,6 +99,10 @@ export default async function handler(
       success: true,
       data: result,
     };
+
+    // Add cache headers for better performance
+    // Cache for 30 seconds, stale-while-revalidate for 60 seconds
+    res.setHeader('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=60');
 
     return res.status(200).json(successResponse);
 

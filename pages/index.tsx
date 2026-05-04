@@ -122,9 +122,9 @@ export default function Home() {
         params.append('category', state.filters.category);
       }
 
-      // Fetch articles with 5-second timeout (reduced from 10s)
+      // Fetch articles with 8-second timeout (allow for cold starts)
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
 
       const startTime = performance.now();
       const response = await fetch(`/api/articles?${params.toString()}`, {
@@ -154,10 +154,14 @@ export default function Home() {
         throw new Error('Failed to fetch articles');
       }
 
-      // Fetch category counts separately if not already loaded
-      // This ensures category buttons always show total counts regardless of filters
+      // Fetch category counts from the main response if available
+      // Otherwise keep existing counts
       let counts = state.categoryCounts;
-      if (!categoryCountsFetched.current) {
+      if (data.data.categoryCounts && Object.keys(data.data.categoryCounts).length > 0) {
+        counts = data.data.categoryCounts;
+        categoryCountsFetched.current = true;
+      } else if (!categoryCountsFetched.current) {
+        // Fallback: fetch separately only if not in main response
         counts = await fetchCategoryCounts();
         categoryCountsFetched.current = true;
       }

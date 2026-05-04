@@ -13,6 +13,10 @@ import { ArticleQuery, ArticleResult, DEFAULT_QUERY_PARAMS, QUERY_LIMITS } from 
 import { Category } from '../models/category';
 import { SystemLog } from '../models/system-log';
 
+// Global connection instance to reuse across serverless function invocations
+let cachedClient: MongoClient | null = null;
+let cachedDb: Db | null = null;
+
 /**
  * DatabaseService class
  * 
@@ -30,7 +34,7 @@ export class DatabaseService {
   private readonly uri: string;
   private readonly dbName: string;
   private readonly maxRetries: number = 2; // Reduced from 3
-  private readonly retryDelays: number[] = [500, 1000]; // Faster retries: 0.5s, 1s
+  private readonly retryDelays: number[] = [300, 700]; // Faster retries: 0.3s, 0.7s (total 1s)
   
   // Collection names
   private readonly ARTICLES_COLLECTION = 'articles';
@@ -48,6 +52,13 @@ export class DatabaseService {
 
     if (!this.uri) {
       throw new Error('MONGODB_URI environment variable is not set');
+    }
+
+    // Reuse cached connection if available (for serverless)
+    if (cachedClient && cachedDb) {
+      this.client = cachedClient;
+      this.db = cachedDb;
+      console.log('[DatabaseService] Reusing cached connection');
     }
   }
 
@@ -113,21 +124,21 @@ export class DatabaseService {
     for (let attempt = 0; attempt < this.maxRetries; attempt++) {
       try {
         // Create MongoDB client with connection pooling options
-        // Reduced timeouts for faster failure during build/deployment
+        // Aggressive timeouts for faster failure during cold starts
         this.client = new MongoClient(this.uri, {
           maxPoolSize: 10,
           minPoolSize: 2,
           maxIdleTimeMS: 30000,
-          serverSelectionTimeoutMS: 3000, // Reduced from 5000ms
-          socketTimeoutMS: 30000, // Reduced from 45000ms
-          connectTimeoutMS: 3000, // Added explicit connect timeout
+          serverSelectionTimeoutMS: 2000, // Reduced from 3000ms
+          socketTimeoutMS: 25000, // Reduced from 30000ms
+          connectTimeoutMS: 2000, // Reduced from 3000ms
         });
 
         // Connect to MongoDB with timeout
         await Promise.race([
           this.client.connect(),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Connection timeout')), 3000)
+            setTimeout(() => reject(new Error('Connection timeout')), 2500) // Reduced from 3000ms
           )
         ]);
 
@@ -136,6 +147,10 @@ export class DatabaseService {
 
         // Verify connection by pinging the database
         await this.db.admin().ping();
+
+        // Cache for serverless reuse
+        cachedClient = this.client;
+        cachedDb = this.db;
 
         console.log(`[DatabaseService] Successfully connected to MongoDB (attempt ${attempt + 1}/${this.maxRetries})`);
         return;
@@ -200,14 +215,9 @@ export class DatabaseService {
    */
   public async isHealthy(): Promise<boolean> {
     try {
-      // Check if client and db exist
-      if (!this.client || !this.db) {
-        return false;
-      }
-
-      // Ping the database to verify connectivity
-      await this.db.admin().ping();
-      return true;
+      // Quick check - just verify client and db exist
+      // Don't ping to avoid timeout
+      return !!(this.client && this.db);
     } catch (error) {
       console.error('[DatabaseService] Health check failed:', error);
       return false;
@@ -279,8 +289,14 @@ export class DatabaseService {
         // Index for chronological listing (descending order)
         articlesCollection.createIndex({ publishedAt: -1 }, { name: 'publishedAt_desc' }),
         
-        // Index for category filtering
+        // Index for category filtering and aggregation
         articlesCollection.createIndex({ category: 1 }, { name: 'category_asc' }),
+        
+        // Compound index for category + publishedAt (for filtered queries)
+        articlesCollection.createIndex(
+          { category: 1, publishedAt: -1 }, 
+          { name: 'category_publishedAt' }
+        ),
         
         // Unique index for URL to prevent duplicates
         articlesCollection.createIndex({ url: 1 }, { unique: true, name: 'url_unique' }),
@@ -429,6 +445,10 @@ export class DatabaseService {
         trustScore: 1,
       };
 
+      // Use estimatedDocumentCount for better performance on first page
+      // For filtered queries, we need countDocuments
+      const hasFilters = Object.keys(filter).length > 0;
+      
       const [articles, total] = await Promise.all([
         articlesCollection
           .find(filter, { projection })
@@ -436,7 +456,10 @@ export class DatabaseService {
           .skip(skip)
           .limit(limit)
           .toArray(),
-        articlesCollection.countDocuments(filter),
+        // Use faster count method when possible
+        hasFilters 
+          ? articlesCollection.countDocuments(filter)
+          : articlesCollection.estimatedDocumentCount()
       ]);
 
       // Transform MongoDB documents to Article objects
@@ -460,6 +483,27 @@ export class DatabaseService {
       // Calculate pagination metadata
       const totalPages = Math.ceil(total / limit);
 
+      // Optionally fetch category counts on first page with no filters
+      let categoryCounts: Partial<Record<Category, number>> | undefined;
+      if (page === 1 && !hasFilters) {
+        try {
+          // Use aggregation to get category counts efficiently
+          const counts = await articlesCollection.aggregate([
+            { $group: { _id: '$category', count: { $sum: 1 } } }
+          ]).toArray();
+          
+          categoryCounts = {};
+          counts.forEach((item: any) => {
+            if (item._id) {
+              categoryCounts![item._id as Category] = item.count;
+            }
+          });
+        } catch (error) {
+          console.warn('[DatabaseService] Failed to fetch category counts:', error);
+          // Don't fail the request if category counts fail
+        }
+      }
+
       return {
         articles: transformedArticles,
         pagination: {
@@ -468,6 +512,7 @@ export class DatabaseService {
           total,
           totalPages,
         },
+        categoryCounts,
       };
     } catch (error) {
       console.error('[DatabaseService] Error finding articles:', error);

@@ -25,11 +25,12 @@ export interface PaginationMetadata {
 
 /**
  * ArticleResult represents the result of an article query
- * with pagination metadata
+ * with pagination metadata and category counts
  */
 export interface ArticleResult {
   articles: Article[];
   pagination: PaginationMetadata;
+  categoryCounts?: Partial<Record<Category, number>>; // Optional category counts
 }
 
 /**
