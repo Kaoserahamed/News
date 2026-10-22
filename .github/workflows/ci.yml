@@ -2,9 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [development]
-  pull_request:
-    branches: [development]
+    branches: \[main\]
 
 jobs:
   lint:
@@ -80,3 +78,4 @@ jobs:
       - name: Deploy to Vercel
         run: |
           echo "Deploying to Vercel with production environment"
+
